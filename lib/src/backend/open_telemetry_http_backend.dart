@@ -7,7 +7,6 @@ import 'package:opentelemetry_logging/src/model/log_entry.dart';
 
 /// An OpenTelemetry backend that sends logs to a specified HTTP endpoint.
 class OpenTelemetryHttpBackend implements OpenTelemetryBackend {
-  final String serviceName;
   final Uri _endpoint;
 
   final Map<String, String>? _headers;
@@ -26,7 +25,6 @@ class OpenTelemetryHttpBackend implements OpenTelemetryBackend {
   /// it will NOT be closed automatically upon [dispose].
   OpenTelemetryHttpBackend({
     required Uri endpoint,
-    required this.serviceName,
     http.Client? client,
     Map<String, String>? headers,
     Map<String, String>? resourceAttributes,
