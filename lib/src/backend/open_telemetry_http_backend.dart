@@ -59,7 +59,7 @@ class OpenTelemetryHttpBackend implements OpenTelemetryBackend {
       'resourceLogs': [
         {
           'resource': {
-            'attributes': attributes,
+            'attributes': attributes.toList(),
           },
           'scopeLogs': [
             {
