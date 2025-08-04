@@ -12,6 +12,8 @@ class OpenTelemetryHttpBackend implements OpenTelemetryBackend {
 
   final Map<String, String>? _headers;
 
+  final Map<String, String>? _resourceAttributes;
+
   final http.Client _client;
   final bool _ownClient;
   final Future<void> Function({
@@ -27,6 +29,7 @@ class OpenTelemetryHttpBackend implements OpenTelemetryBackend {
     required this.serviceName,
     http.Client? client,
     Map<String, String>? headers,
+    Map<String, String>? resourceAttributes,
     Future<void> Function({
       required int statusCode,
       required String body,
@@ -35,6 +38,7 @@ class OpenTelemetryHttpBackend implements OpenTelemetryBackend {
         _client = client ?? http.Client(),
         _ownClient = client == null,
         _headers = headers,
+        _resourceAttributes = resourceAttributes,
         _onPostError = onPostError;
 
   @override
@@ -46,13 +50,18 @@ class OpenTelemetryHttpBackend implements OpenTelemetryBackend {
 
   @override
   Future<void> sendLogs(List<LogEntry> entries) async {
+    final attributes =  _resourceAttributes?.entries.map(
+          (entry) => {
+        'key': entry.key,
+        'value': {'stringValue': entry.value},
+      },
+    ) ?? [];
+
     final payload = jsonEncode({
       'resourceLogs': [
         {
           'resource': {
-            'attributes': [
-              {'key': 'service.name', 'value': {'stringValue': serviceName}}
-            ]
+            'attributes': attributes,
           },
           'scopeLogs': [
             {
