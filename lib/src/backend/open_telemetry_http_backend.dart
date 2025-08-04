@@ -7,7 +7,10 @@ import 'package:opentelemetry_logging/src/model/log_entry.dart';
 
 /// An OpenTelemetry backend that sends logs to a specified HTTP endpoint.
 class OpenTelemetryHttpBackend implements OpenTelemetryBackend {
+  final String serviceName;
   final Uri _endpoint;
+
+  final Map<String, String>? _headers;
 
   final http.Client _client;
   final bool _ownClient;
@@ -21,7 +24,9 @@ class OpenTelemetryHttpBackend implements OpenTelemetryBackend {
   /// it will NOT be closed automatically upon [dispose].
   OpenTelemetryHttpBackend({
     required Uri endpoint,
+    required this.serviceName,
     http.Client? client,
+    Map<String, String>? headers,
     Future<void> Function({
       required int statusCode,
       required String body,
@@ -29,6 +34,7 @@ class OpenTelemetryHttpBackend implements OpenTelemetryBackend {
   })  : _endpoint = endpoint,
         _client = client ?? http.Client(),
         _ownClient = client == null,
+        _headers = headers,
         _onPostError = onPostError;
 
   @override
@@ -43,7 +49,11 @@ class OpenTelemetryHttpBackend implements OpenTelemetryBackend {
     final payload = jsonEncode({
       'resourceLogs': [
         {
-          'resource': {},
+          'resource': {
+            'attributes': [
+              {'key': 'service.name', 'value': {'stringValue': serviceName}}
+            ]
+          },
           'scopeLogs': [
             {
               'logRecords': entries.map((e) => e.toJson()).toList(),
@@ -54,7 +64,10 @@ class OpenTelemetryHttpBackend implements OpenTelemetryBackend {
     });
     final res = await _client.post(
       _endpoint,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        ...?_headers,
+      },
       body: payload,
     );
 
