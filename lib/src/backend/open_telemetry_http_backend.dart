@@ -75,7 +75,7 @@ class OpenTelemetryHttpBackend implements OpenTelemetryBackend {
         'Content-Type': 'application/json',
         ...?_headers,
       },
-      body: payload,
+      body: utf8.encode(payload),
     );
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
